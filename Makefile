@@ -15,32 +15,32 @@ help:
 
 # Build Docker images
 build:
-	docker-compose build
+	docker compose build
 
 # Start services
 up:
-	docker-compose up -d
+	docker compose up -d
 	@echo "Services started. API available at http://localhost:8000"
 	@echo "Swagger docs available at http://localhost:8000/docs"
 
 # Stop services
 down:
-	docker-compose down
+	docker compose down
 
 # Restart services
 restart: down up
 
 # Show logs
 logs:
-	docker-compose logs -f
+	docker compose logs -f
 
 # Show API logs
 logs-api:
-	docker-compose logs -f api
+	docker compose logs -f api
 
 # Show DB logs
 logs-db:
-	docker-compose logs -f db
+	docker compose logs -f db
 
 # Run integration tests
 test:
@@ -49,5 +49,5 @@ test:
 
 # Clean up everything including volumes
 clean:
-	docker-compose down -v
+	docker compose down -v
 	@echo "Services stopped and volumes removed"
