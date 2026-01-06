@@ -53,11 +53,17 @@ Create a `.env` file:
 cp .env.example .env
 ```
 
-Edit `.env` to set your custom API token:
+Edit `.env` to set your custom configuration:
 
 ```
 API_TOKEN=your-secret-token-here
+MYSQL_ROOT_PASSWORD=your-root-password
+MYSQL_DATABASE=perfcons
+MYSQL_USER=your-db-user
+MYSQL_PASSWORD=your-db-password
 ```
+
+**Important**: For production deployments, always change the default passwords and API token!
 
 Then restart services:
 
@@ -205,8 +211,14 @@ make clean     # Stop services and remove volumes
 
 ## Environment Variables
 
-- `API_TOKEN`: Bearer token for authentication (default: `my-secret-token`)
-- `DATABASE_URL`: Database connection string (automatically configured)
+- `API_TOKEN`: Bearer token for authentication (default: `CHANGE-THIS-TOKEN-IN-PRODUCTION`)
+- `DATABASE_URL`: Database connection string (automatically configured in Docker Compose)
+- `MYSQL_ROOT_PASSWORD`: MariaDB root password (default: `rootpassword`)
+- `MYSQL_DATABASE`: Database name (default: `perfcons`)
+- `MYSQL_USER`: Database user (default: `user`)
+- `MYSQL_PASSWORD`: Database password (default: `password`)
+
+**Security Note**: Always change default passwords and tokens in production environments!
 
 ## Volume Management
 

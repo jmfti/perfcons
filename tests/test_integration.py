@@ -40,7 +40,7 @@ class TestFactsAPI(unittest.TestCase):
                 f"{self.BASE_URL}/facts",
                 headers=self.headers
             )
-        except:
+        except requests.exceptions.RequestException:
             pass
     
     def test_health_check(self):

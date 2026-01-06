@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker, Session
 
 # Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://user:password@db:3306/perfcons")
-API_TOKEN = os.getenv("API_TOKEN", "default-token-change-in-production")
+API_TOKEN = os.getenv("API_TOKEN", "CHANGE-THIS-TOKEN-IN-PRODUCTION")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
