@@ -1,1 +1,243 @@
-# perfcons
+# Perfcons - Facts Management API
+
+A REST API built with FastAPI and MariaDB for managing facts associated with conversation IDs.
+
+## Features
+
+- **FastAPI** REST API with automatic Swagger documentation
+- **MariaDB** database with named volume for data persistence
+- **Bearer Token Authentication** for secure API access
+- **CRUD Operations** for facts associated with conversation IDs
+- **Integration Tests** with unittest
+- **Docker Compose** stack for easy deployment
+- **Large Text Support** - Facts can store >8KB of text
+
+## Project Structure
+
+```
+perfcons/
+├── app/
+│   ├── src/
+│   │   └── main.py          # FastAPI application
+│   ├── Dockerfile           # Docker image for API
+│   └── requirements.txt     # Python dependencies
+├── tests/
+│   └── test_integration.py  # Integration tests
+├── docker-compose.yml       # Docker Compose configuration
+├── Makefile                 # Deployment commands
+└── README.md
+```
+
+## Quick Start
+
+### Prerequisites
+
+- Docker and Docker Compose installed
+- Python 3.11+ (for running tests locally)
+
+### 1. Build and Start Services
+
+```bash
+make build
+make up
+```
+
+The API will be available at `http://localhost:8000`  
+Swagger documentation at `http://localhost:8000/docs`
+
+### 2. Set API Token (Optional)
+
+Create a `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` to set your custom API token:
+
+```
+API_TOKEN=your-secret-token-here
+```
+
+Then restart services:
+
+```bash
+make restart
+```
+
+### 3. Run Integration Tests
+
+Install test dependencies:
+
+```bash
+pip install requests
+```
+
+Run tests:
+
+```bash
+make test
+```
+
+## API Endpoints
+
+All endpoints require Bearer token authentication via the `Authorization` header and conversation ID via the `X-Conversation-ID` header (except `/facts/all` and `/health`).
+
+### Authentication
+
+```
+Authorization: Bearer <your-api-token>
+```
+
+### Create Fact
+
+```bash
+POST /facts
+Headers:
+  Authorization: Bearer my-secret-token
+  X-Conversation-ID: conversation-123
+Body:
+  {
+    "fact": "Your fact text here"
+  }
+```
+
+### Read Fact
+
+```bash
+GET /facts
+Headers:
+  Authorization: Bearer my-secret-token
+  X-Conversation-ID: conversation-123
+```
+
+### Update Fact
+
+```bash
+PUT /facts
+Headers:
+  Authorization: Bearer my-secret-token
+  X-Conversation-ID: conversation-123
+Body:
+  {
+    "fact": "Updated fact text"
+  }
+```
+
+### Delete Fact
+
+```bash
+DELETE /facts
+Headers:
+  Authorization: Bearer my-secret-token
+  X-Conversation-ID: conversation-123
+```
+
+### List All Facts
+
+```bash
+GET /facts/all
+Headers:
+  Authorization: Bearer my-secret-token
+```
+
+### Health Check
+
+```bash
+GET /health
+```
+
+## Example Usage with curl
+
+```bash
+# Create a fact
+curl -X POST http://localhost:8000/facts \
+  -H "Authorization: Bearer my-secret-token" \
+  -H "X-Conversation-ID: conv-001" \
+  -H "Content-Type: application/json" \
+  -d '{"fact": "This is a sample fact"}'
+
+# Read a fact
+curl -X GET http://localhost:8000/facts \
+  -H "Authorization: Bearer my-secret-token" \
+  -H "X-Conversation-ID: conv-001"
+
+# Update a fact
+curl -X PUT http://localhost:8000/facts \
+  -H "Authorization: Bearer my-secret-token" \
+  -H "X-Conversation-ID: conv-001" \
+  -H "Content-Type: application/json" \
+  -d '{"fact": "Updated fact text"}'
+
+# Delete a fact
+curl -X DELETE http://localhost:8000/facts \
+  -H "Authorization: Bearer my-secret-token" \
+  -H "X-Conversation-ID: conv-001"
+
+# List all facts
+curl -X GET http://localhost:8000/facts/all \
+  -H "Authorization: Bearer my-secret-token"
+```
+
+## Makefile Commands
+
+```bash
+make help      # Show available commands
+make build     # Build Docker images
+make up        # Start services
+make down      # Stop services
+make restart   # Restart services
+make logs      # Show logs from all services
+make logs-api  # Show logs from API service
+make logs-db   # Show logs from database service
+make test      # Run integration tests
+make clean     # Stop services and remove volumes
+```
+
+## Database Schema
+
+**Table: facts**
+
+| Column           | Type         | Description                          |
+|-----------------|--------------|--------------------------------------|
+| conversation_id | VARCHAR(255) | Primary key, conversation identifier |
+| fact            | TEXT(16000)  | Large text field for storing facts   |
+
+## Environment Variables
+
+- `API_TOKEN`: Bearer token for authentication (default: `my-secret-token`)
+- `DATABASE_URL`: Database connection string (automatically configured)
+
+## Volume Management
+
+The database data is stored in a named Docker volume: `perfcons-db-data`
+
+To remove the volume and all data:
+
+```bash
+make clean
+```
+
+## Development
+
+### Running Locally Without Docker
+
+1. Install dependencies:
+```bash
+pip install -r app/requirements.txt
+```
+
+2. Set environment variables:
+```bash
+export DATABASE_URL=mysql+pymysql://user:password@localhost:3306/perfcons
+export API_TOKEN=my-secret-token
+```
+
+3. Run the application:
+```bash
+uvicorn app.src.main:app --reload
+```
+
+## License
+
+MIT
