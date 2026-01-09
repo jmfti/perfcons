@@ -15,12 +15,18 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Database model
+# Database models
 class Fact(Base):
     __tablename__ = "facts"
     
     conversation_id = Column(String(255), primary_key=True, index=True)
     fact = Column(Text(16000), nullable=False)
+
+class Budget(Base):
+    __tablename__ = "budgets"
+    
+    conversation_id = Column(String(255), primary_key=True, index=True)
+    budget = Column(Text(100000), nullable=False)
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -39,10 +45,23 @@ class FactResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class BudgetCreate(BaseModel):
+    budget: str
+
+class BudgetUpdate(BaseModel):
+    budget: str
+
+class BudgetResponse(BaseModel):
+    conversation_id: str
+    budget: str
+    
+    class Config:
+        from_attributes = True
+
 # FastAPI app
 app = FastAPI(
     title="Perfcons API",
-    description="REST API for managing facts associated with conversation IDs",
+    description="REST API for managing facts and budgets associated with conversation IDs",
     version="1.0.0"
 )
 
@@ -155,3 +174,88 @@ async def delete_fact(
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy"}
+
+# Budget CRUD endpoints
+@app.post("/budgets", response_model=BudgetResponse, status_code=status.HTTP_201_CREATED)
+async def create_budget(
+    budget_data: BudgetCreate,
+    conversation_id: str = Header(..., alias="X-Conversation-ID"),
+    token: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Create a new budget for a conversation ID"""
+    # Check if budget already exists
+    existing_budget = db.query(Budget).filter(Budget.conversation_id == conversation_id).first()
+    if existing_budget:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Budget already exists for this conversation ID"
+        )
+    
+    db_budget = Budget(conversation_id=conversation_id, budget=budget_data.budget)
+    db.add(db_budget)
+    db.commit()
+    db.refresh(db_budget)
+    return db_budget
+
+@app.get("/budgets", response_model=BudgetResponse)
+async def read_budget(
+    conversation_id: str = Header(..., alias="X-Conversation-ID"),
+    token: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Retrieve a budget by conversation ID"""
+    budget = db.query(Budget).filter(Budget.conversation_id == conversation_id).first()
+    if not budget:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Budget not found for this conversation ID"
+        )
+    return budget
+
+@app.get("/budgets/all", response_model=List[BudgetResponse])
+async def read_all_budgets(
+    token: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Retrieve all budgets"""
+    budgets = db.query(Budget).all()
+    return budgets
+
+@app.put("/budgets", response_model=BudgetResponse)
+async def update_budget(
+    budget_data: BudgetUpdate,
+    conversation_id: str = Header(..., alias="X-Conversation-ID"),
+    token: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Update a budget by conversation ID"""
+    budget = db.query(Budget).filter(Budget.conversation_id == conversation_id).first()
+    if not budget:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Budget not found for this conversation ID"
+        )
+    
+    budget.budget = budget_data.budget
+    db.commit()
+    db.refresh(budget)
+    return budget
+
+@app.delete("/budgets", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_budget(
+    conversation_id: str = Header(..., alias="X-Conversation-ID"),
+    token: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Delete a budget by conversation ID"""
+    budget = db.query(Budget).filter(Budget.conversation_id == conversation_id).first()
+    if not budget:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Budget not found for this conversation ID"
+        )
+    
+    db.delete(budget)
+    db.commit()
+    return None
