@@ -68,15 +68,13 @@ NGROK_AUTHTOKEN=your-ngrok-authtoken-here
 
 **Important**: For production deployments, always change the default passwords and API token!
 
-**ngrok Setup (Optional)**: To expose your API to the internet via ngrok:
+**ngrok Setup (Required for internet access)**: To expose your API to the internet via ngrok:
 1. Sign up for a free account at [ngrok.com](https://ngrok.com)
 2. Get your authtoken from [ngrok dashboard](https://dashboard.ngrok.com/get-started/your-authtoken)
 3. Add the authtoken to your `.env` file as `NGROK_AUTHTOKEN`
+4. Restart the services with `make restart`
 
-Note: ngrok can work without an authtoken for basic testing, but the authtoken provides:
-- More stable tunnel URLs
-- Longer session times
-- Additional features
+**Note**: ngrok requires an authtoken to create tunnels. Without it, the ngrok service will show authentication errors in the logs but other services (API and DB) will work normally.
 
 Then restart services:
 
@@ -370,7 +368,7 @@ Visit `http://localhost:4040` to access the ngrok inspection interface where you
 - `MYSQL_DATABASE`: Database name (default: `perfcons`)
 - `MYSQL_USER`: Database user (default: `user`)
 - `MYSQL_PASSWORD`: Database password (default: `password`)
-- `NGROK_AUTHTOKEN`: (Optional) ngrok authentication token for stable tunnel URLs and extended features
+- `NGROK_AUTHTOKEN`: (Required for ngrok) Your ngrok authentication token for creating internet tunnels. Get it from https://dashboard.ngrok.com/get-started/your-authtoken
 
 **Security Note**: Always change default passwords and tokens in production environments!
 
