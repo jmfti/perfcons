@@ -1,0 +1,45 @@
+services:
+  db:
+    image: mariadb:11.1
+    container_name: perfcons-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-perfcons}
+      MYSQL_USER: ${MYSQL_USER:-user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+    volumes:
+      - perfcons-db-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - perfcons-network
+
+  api:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: perfcons-api
+    environment:
+      DATABASE_URL: mysql+pymysql://user:password@db:3306/perfcons
+      API_TOKEN: ${API_TOKEN:-my-secret-token}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - perfcons-network
+    restart: unless-stopped
+
+volumes:
+  perfcons-db-data:
+    name: perfcons-db-data
+
+networks:
+  perfcons-network:
+    name: perfcons-network
