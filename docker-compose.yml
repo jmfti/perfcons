@@ -36,6 +36,22 @@ services:
       - perfcons-network
     restart: unless-stopped
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: perfcons-ngrok
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:-}
+    command:
+      - "http"
+      - "api:8000"
+    ports:
+      - "4040:4040"
+    depends_on:
+      - api
+    networks:
+      - perfcons-network
+    restart: unless-stopped
+
 volumes:
   perfcons-db-data:
     name: perfcons-db-data

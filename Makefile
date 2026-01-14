@@ -1,17 +1,19 @@
-.PHONY: help build up down restart logs test clean
+.PHONY: help build up down restart logs test clean ngrok-url logs-ngrok
 
 # Default target
 help:
 	@echo "Available commands:"
-	@echo "  make build    - Build the Docker images"
-	@echo "  make up       - Start the services"
-	@echo "  make down     - Stop the services"
-	@echo "  make restart  - Restart the services"
-	@echo "  make logs     - Show logs from all services"
-	@echo "  make logs-api - Show logs from API service"
-	@echo "  make logs-db  - Show logs from database service"
-	@echo "  make test     - Run integration tests"
-	@echo "  make clean    - Stop services and remove volumes"
+	@echo "  make build      - Build the Docker images"
+	@echo "  make up         - Start the services"
+	@echo "  make down       - Stop the services"
+	@echo "  make restart    - Restart the services"
+	@echo "  make logs       - Show logs from all services"
+	@echo "  make logs-api   - Show logs from API service"
+	@echo "  make logs-db    - Show logs from database service"
+	@echo "  make logs-ngrok - Show logs from ngrok service"
+	@echo "  make ngrok-url  - Get the ngrok public URL"
+	@echo "  make test       - Run integration tests"
+	@echo "  make clean      - Stop services and remove volumes"
 
 # Build Docker images
 build:
@@ -41,6 +43,15 @@ logs-api:
 # Show DB logs
 logs-db:
 	docker compose logs -f db
+
+# Show ngrok logs
+logs-ngrok:
+	docker compose logs -f ngrok
+
+# Get ngrok public URL
+ngrok-url:
+	@echo "Fetching ngrok public URL..."
+	@curl -s http://localhost:4040/api/tunnels | grep -o '"public_url":"[^"]*' | grep -o 'https://[^"]*' || echo "ngrok tunnel not ready yet. Please wait a few seconds and try again."
 
 # Run integration tests
 test:
