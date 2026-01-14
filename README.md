@@ -10,7 +10,7 @@ A REST API built with FastAPI and MariaDB for managing facts and budgets associa
 - **CRUD Operations** for facts and budgets associated with conversation IDs
 - **Integration Tests** with unittest
 - **Docker Compose** stack for easy deployment
-- **Large Text Support** - Facts can store >8KB of text, budgets can store >50KB of text
+- **Large Text Support** - Facts can store >8KB of text, budgets can store >100KB of text
 
 ## Project Structure
 
