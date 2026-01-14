@@ -1,16 +1,16 @@
-# Perfcons - Facts Management API
+# Perfcons - Facts and Budgets Management API
 
-A REST API built with FastAPI and MariaDB for managing facts associated with conversation IDs.
+A REST API built with FastAPI and MariaDB for managing facts and budgets associated with conversation IDs.
 
 ## Features
 
 - **FastAPI** REST API with automatic Swagger documentation
 - **MariaDB** database with named volume for data persistence
 - **Bearer Token Authentication** for secure API access
-- **CRUD Operations** for facts associated with conversation IDs
+- **CRUD Operations** for facts and budgets associated with conversation IDs
 - **Integration Tests** with unittest
 - **Docker Compose** stack for easy deployment
-- **Large Text Support** - Facts can store >8KB of text
+- **Large Text Support** - Facts can store up to 16,000 characters, budgets can store up to 100,000 characters
 
 ## Project Structure
 
@@ -87,7 +87,7 @@ make test
 
 ## API Endpoints
 
-All endpoints require Bearer token authentication via the `Authorization` header and conversation ID via the `X-Conversation-ID` header (except `/facts/all` and `/health`).
+All endpoints require Bearer token authentication via the `Authorization` header and conversation ID via the `X-Conversation-ID` header (except `/facts/all`, `/budgets/all` and `/health`).
 
 ### Authentication
 
@@ -153,6 +153,60 @@ Headers:
 GET /health
 ```
 
+## Budget Endpoints
+
+### Create Budget
+
+```bash
+POST /budgets
+Headers:
+  Authorization: Bearer my-secret-token
+  X-Conversation-ID: conversation-123
+Body:
+  {
+    "budget": "Your budget text here"
+  }
+```
+
+### Read Budget
+
+```bash
+GET /budgets
+Headers:
+  Authorization: Bearer my-secret-token
+  X-Conversation-ID: conversation-123
+```
+
+### Update Budget
+
+```bash
+PUT /budgets
+Headers:
+  Authorization: Bearer my-secret-token
+  X-Conversation-ID: conversation-123
+Body:
+  {
+    "budget": "Updated budget text"
+  }
+```
+
+### Delete Budget
+
+```bash
+DELETE /budgets
+Headers:
+  Authorization: Bearer my-secret-token
+  X-Conversation-ID: conversation-123
+```
+
+### List All Budgets
+
+```bash
+GET /budgets/all
+Headers:
+  Authorization: Bearer my-secret-token
+```
+
 ## Example Usage with curl
 
 ```bash
@@ -185,6 +239,38 @@ curl -X GET http://localhost:8000/facts/all \
   -H "Authorization: Bearer my-secret-token"
 ```
 
+## Example Usage with curl - Budgets
+
+```bash
+# Create a budget
+curl -X POST http://localhost:8000/budgets \
+  -H "Authorization: Bearer my-secret-token" \
+  -H "X-Conversation-ID: conv-001" \
+  -H "Content-Type: application/json" \
+  -d '{"budget": "Marketing: $5000\nDevelopment: $15000\nInfrastructure: $3000"}'
+
+# Read a budget
+curl -X GET http://localhost:8000/budgets \
+  -H "Authorization: Bearer my-secret-token" \
+  -H "X-Conversation-ID: conv-001"
+
+# Update a budget
+curl -X PUT http://localhost:8000/budgets \
+  -H "Authorization: Bearer my-secret-token" \
+  -H "X-Conversation-ID: conv-001" \
+  -H "Content-Type: application/json" \
+  -d '{"budget": "Marketing: $6000\nDevelopment: $18000\nInfrastructure: $4000\nDesign: $2000"}'
+
+# Delete a budget
+curl -X DELETE http://localhost:8000/budgets \
+  -H "Authorization: Bearer my-secret-token" \
+  -H "X-Conversation-ID: conv-001"
+
+# List all budgets
+curl -X GET http://localhost:8000/budgets/all \
+  -H "Authorization: Bearer my-secret-token"
+```
+
 ## Makefile Commands
 
 ```bash
@@ -204,10 +290,17 @@ make clean     # Stop services and remove volumes
 
 **Table: facts**
 
-| Column           | Type         | Description                          |
-|-----------------|--------------|--------------------------------------|
-| conversation_id | VARCHAR(255) | Primary key, conversation identifier |
-| fact            | TEXT(16000)  | Large text field for storing facts   |
+| Column           | Type         | Description                              |
+|-----------------|--------------|------------------------------------------|
+| conversation_id | VARCHAR(255) | Primary key, conversation identifier     |
+| fact            | TEXT         | Text field for storing facts (up to 16,000 characters) |
+
+**Table: budgets**
+
+| Column           | Type          | Description                              |
+|-----------------|---------------|------------------------------------------|
+| conversation_id | VARCHAR(255)  | Primary key, conversation identifier     |
+| budget          | TEXT          | Text field for storing budgets (up to 100,000 characters) |
 
 ## Environment Variables
 
