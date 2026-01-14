@@ -325,8 +325,11 @@ You can also:
 ### Example: Using the API through ngrok
 
 ```bash
-# Get your ngrok URL
-NGROK_URL=$(make ngrok-url | tail -1)
+# Get your ngrok URL (will output just the URL when tunnel is ready)
+make ngrok-url
+
+# Store it in a variable for use in commands
+NGROK_URL=$(make ngrok-url 2>/dev/null | grep "https://")
 
 # Create a fact through the internet
 curl -X POST ${NGROK_URL}/facts \

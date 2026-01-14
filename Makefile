@@ -51,7 +51,13 @@ logs-ngrok:
 # Get ngrok public URL
 ngrok-url:
 	@echo "Fetching ngrok public URL..."
-	@curl -s http://localhost:4040/api/tunnels | grep -o '"public_url":"[^"]*' | grep -o 'https://[^"]*' || echo "ngrok tunnel not ready yet. Please wait a few seconds and try again."
+	@curl -s http://localhost:4040/api/tunnels 2>/dev/null | \
+		grep -q '"public_url"' && \
+		curl -s http://localhost:4040/api/tunnels | \
+		grep -o '"public_url":"https://[^"]*' | \
+		head -1 | \
+		cut -d'"' -f4 || \
+		echo "ngrok tunnel not ready yet. Make sure you have set NGROK_AUTHTOKEN in your .env file and restarted the services."
 
 # Run integration tests
 test:
