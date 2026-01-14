@@ -290,17 +290,17 @@ make clean     # Stop services and remove volumes
 
 **Table: facts**
 
-| Column           | Type         | Description                          |
-|-----------------|--------------|--------------------------------------|
-| conversation_id | VARCHAR(255) | Primary key, conversation identifier |
-| fact            | TEXT(16000)  | Large text field for storing facts   |
+| Column           | Type         | Description                              |
+|-----------------|--------------|------------------------------------------|
+| conversation_id | VARCHAR(255) | Primary key, conversation identifier     |
+| fact            | TEXT         | Large text field for storing facts (supports up to 16KB) |
 
 **Table: budgets**
 
-| Column           | Type          | Description                          |
-|-----------------|---------------|--------------------------------------|
-| conversation_id | VARCHAR(255)  | Primary key, conversation identifier |
-| budget          | TEXT(100000)  | Large text field for storing budgets |
+| Column           | Type          | Description                              |
+|-----------------|---------------|------------------------------------------|
+| conversation_id | VARCHAR(255)  | Primary key, conversation identifier     |
+| budget          | TEXT          | Large text field for storing budgets (supports up to 100KB) |
 
 ## Environment Variables
 
