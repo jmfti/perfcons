@@ -86,6 +86,15 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
     return credentials.credentials
 
 # CRUD endpoints
+@app.get("/facts/all", response_model=List[FactResponse])
+async def read_all_facts(
+    token: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Retrieve all facts"""
+    facts = db.query(Fact).all()
+    return facts
+
 @app.post("/facts/{conversation_id}", response_model=FactResponse, status_code=status.HTTP_201_CREATED)
 async def create_fact(
     conversation_id: str,
@@ -122,15 +131,6 @@ async def read_fact(
             detail="Fact not found for this conversation ID"
         )
     return fact
-
-@app.get("/facts/all", response_model=List[FactResponse])
-async def read_all_facts(
-    token: str = Depends(verify_token),
-    db: Session = Depends(get_db)
-):
-    """Retrieve all facts"""
-    facts = db.query(Fact).all()
-    return facts
 
 @app.put("/facts/{conversation_id}", response_model=FactResponse)
 async def update_fact(
@@ -176,6 +176,15 @@ async def health_check():
     return {"status": "healthy"}
 
 # Budget CRUD endpoints
+@app.get("/budgets/all", response_model=List[BudgetResponse])
+async def read_all_budgets(
+    token: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Retrieve all budgets"""
+    budgets = db.query(Budget).all()
+    return budgets
+
 @app.post("/budgets/{conversation_id}", response_model=BudgetResponse, status_code=status.HTTP_201_CREATED)
 async def create_budget(
     conversation_id: str,
@@ -212,15 +221,6 @@ async def read_budget(
             detail="Budget not found for this conversation ID"
         )
     return budget
-
-@app.get("/budgets/all", response_model=List[BudgetResponse])
-async def read_all_budgets(
-    token: str = Depends(verify_token),
-    db: Session = Depends(get_db)
-):
-    """Retrieve all budgets"""
-    budgets = db.query(Budget).all()
-    return budgets
 
 @app.put("/budgets/{conversation_id}", response_model=BudgetResponse)
 async def update_budget(
