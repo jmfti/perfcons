@@ -98,7 +98,7 @@ make test
 
 ## API Endpoints
 
-All endpoints require Bearer token authentication via the `Authorization` header and conversation ID via the `X-Conversation-ID` header (except `/facts/all`, `/budgets/all` and `/health`).
+All endpoints require Bearer token authentication via the `Authorization` header. Endpoints that operate on specific conversation data require the conversation ID as a URL path parameter (except `/facts/all`, `/budgets/all` and `/health`).
 
 ### Authentication
 
@@ -109,10 +109,9 @@ Authorization: Bearer <your-api-token>
 ### Create Fact
 
 ```bash
-POST /facts
+POST /facts/{conversation_id}
 Headers:
   Authorization: Bearer my-secret-token
-  X-Conversation-ID: conversation-123
 Body:
   {
     "fact": "Your fact text here"
@@ -122,19 +121,17 @@ Body:
 ### Read Fact
 
 ```bash
-GET /facts
+GET /facts/{conversation_id}
 Headers:
   Authorization: Bearer my-secret-token
-  X-Conversation-ID: conversation-123
 ```
 
 ### Update Fact
 
 ```bash
-PUT /facts
+PUT /facts/{conversation_id}
 Headers:
   Authorization: Bearer my-secret-token
-  X-Conversation-ID: conversation-123
 Body:
   {
     "fact": "Updated fact text"
@@ -144,10 +141,9 @@ Body:
 ### Delete Fact
 
 ```bash
-DELETE /facts
+DELETE /facts/{conversation_id}
 Headers:
   Authorization: Bearer my-secret-token
-  X-Conversation-ID: conversation-123
 ```
 
 ### List All Facts
@@ -169,10 +165,9 @@ GET /health
 ### Create Budget
 
 ```bash
-POST /budgets
+POST /budgets/{conversation_id}
 Headers:
   Authorization: Bearer my-secret-token
-  X-Conversation-ID: conversation-123
 Body:
   {
     "budget": "Your budget text here"
@@ -182,19 +177,17 @@ Body:
 ### Read Budget
 
 ```bash
-GET /budgets
+GET /budgets/{conversation_id}
 Headers:
   Authorization: Bearer my-secret-token
-  X-Conversation-ID: conversation-123
 ```
 
 ### Update Budget
 
 ```bash
-PUT /budgets
+PUT /budgets/{conversation_id}
 Headers:
   Authorization: Bearer my-secret-token
-  X-Conversation-ID: conversation-123
 Body:
   {
     "budget": "Updated budget text"
@@ -204,10 +197,9 @@ Body:
 ### Delete Budget
 
 ```bash
-DELETE /budgets
+DELETE /budgets/{conversation_id}
 Headers:
   Authorization: Bearer my-secret-token
-  X-Conversation-ID: conversation-123
 ```
 
 ### List All Budgets
@@ -222,28 +214,24 @@ Headers:
 
 ```bash
 # Create a fact
-curl -X POST http://localhost:8000/facts \
+curl -X POST http://localhost:8000/facts/conv-001 \
   -H "Authorization: Bearer my-secret-token" \
-  -H "X-Conversation-ID: conv-001" \
   -H "Content-Type: application/json" \
   -d '{"fact": "This is a sample fact"}'
 
 # Read a fact
-curl -X GET http://localhost:8000/facts \
-  -H "Authorization: Bearer my-secret-token" \
-  -H "X-Conversation-ID: conv-001"
+curl -X GET http://localhost:8000/facts/conv-001 \
+  -H "Authorization: Bearer my-secret-token"
 
 # Update a fact
-curl -X PUT http://localhost:8000/facts \
+curl -X PUT http://localhost:8000/facts/conv-001 \
   -H "Authorization: Bearer my-secret-token" \
-  -H "X-Conversation-ID: conv-001" \
   -H "Content-Type: application/json" \
   -d '{"fact": "Updated fact text"}'
 
 # Delete a fact
-curl -X DELETE http://localhost:8000/facts \
-  -H "Authorization: Bearer my-secret-token" \
-  -H "X-Conversation-ID: conv-001"
+curl -X DELETE http://localhost:8000/facts/conv-001 \
+  -H "Authorization: Bearer my-secret-token"
 
 # List all facts
 curl -X GET http://localhost:8000/facts/all \
@@ -254,28 +242,24 @@ curl -X GET http://localhost:8000/facts/all \
 
 ```bash
 # Create a budget
-curl -X POST http://localhost:8000/budgets \
+curl -X POST http://localhost:8000/budgets/conv-001 \
   -H "Authorization: Bearer my-secret-token" \
-  -H "X-Conversation-ID: conv-001" \
   -H "Content-Type: application/json" \
   -d '{"budget": "Marketing: $5000\nDevelopment: $15000\nInfrastructure: $3000"}'
 
 # Read a budget
-curl -X GET http://localhost:8000/budgets \
-  -H "Authorization: Bearer my-secret-token" \
-  -H "X-Conversation-ID: conv-001"
+curl -X GET http://localhost:8000/budgets/conv-001 \
+  -H "Authorization: Bearer my-secret-token"
 
 # Update a budget
-curl -X PUT http://localhost:8000/budgets \
+curl -X PUT http://localhost:8000/budgets/conv-001 \
   -H "Authorization: Bearer my-secret-token" \
-  -H "X-Conversation-ID: conv-001" \
   -H "Content-Type: application/json" \
   -d '{"budget": "Marketing: $6000\nDevelopment: $18000\nInfrastructure: $4000\nDesign: $2000"}'
 
 # Delete a budget
-curl -X DELETE http://localhost:8000/budgets \
-  -H "Authorization: Bearer my-secret-token" \
-  -H "X-Conversation-ID: conv-001"
+curl -X DELETE http://localhost:8000/budgets/conv-001 \
+  -H "Authorization: Bearer my-secret-token"
 
 # List all budgets
 curl -X GET http://localhost:8000/budgets/all \
@@ -333,9 +317,8 @@ make ngrok-url
 NGROK_URL=$(make ngrok-url 2>&1 | grep "https://")
 
 # Create a fact through the internet
-curl -X POST ${NGROK_URL}/facts \
+curl -X POST ${NGROK_URL}/facts/conv-001 \
   -H "Authorization: Bearer my-secret-token" \
-  -H "X-Conversation-ID: conv-001" \
   -H "Content-Type: application/json" \
   -d '{"fact": "Testing through ngrok!"}'
 ```

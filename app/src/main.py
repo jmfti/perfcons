@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Header, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import Optional, List
@@ -86,10 +86,19 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
     return credentials.credentials
 
 # CRUD endpoints
-@app.post("/facts", response_model=FactResponse, status_code=status.HTTP_201_CREATED)
+@app.get("/facts/all", response_model=List[FactResponse])
+async def read_all_facts(
+    token: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Retrieve all facts"""
+    facts = db.query(Fact).all()
+    return facts
+
+@app.post("/facts/{conversation_id}", response_model=FactResponse, status_code=status.HTTP_201_CREATED)
 async def create_fact(
+    conversation_id: str,
     fact_data: FactCreate,
-    conversation_id: str = Header(..., alias="X-Conversation-ID"),
     token: str = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
@@ -108,9 +117,9 @@ async def create_fact(
     db.refresh(db_fact)
     return db_fact
 
-@app.get("/facts", response_model=FactResponse)
+@app.get("/facts/{conversation_id}", response_model=FactResponse)
 async def read_fact(
-    conversation_id: str = Header(..., alias="X-Conversation-ID"),
+    conversation_id: str,
     token: str = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
@@ -123,19 +132,10 @@ async def read_fact(
         )
     return fact
 
-@app.get("/facts/all", response_model=List[FactResponse])
-async def read_all_facts(
-    token: str = Depends(verify_token),
-    db: Session = Depends(get_db)
-):
-    """Retrieve all facts"""
-    facts = db.query(Fact).all()
-    return facts
-
-@app.put("/facts", response_model=FactResponse)
+@app.put("/facts/{conversation_id}", response_model=FactResponse)
 async def update_fact(
+    conversation_id: str,
     fact_data: FactUpdate,
-    conversation_id: str = Header(..., alias="X-Conversation-ID"),
     token: str = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
@@ -152,9 +152,9 @@ async def update_fact(
     db.refresh(fact)
     return fact
 
-@app.delete("/facts", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/facts/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_fact(
-    conversation_id: str = Header(..., alias="X-Conversation-ID"),
+    conversation_id: str,
     token: str = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
@@ -176,10 +176,19 @@ async def health_check():
     return {"status": "healthy"}
 
 # Budget CRUD endpoints
-@app.post("/budgets", response_model=BudgetResponse, status_code=status.HTTP_201_CREATED)
+@app.get("/budgets/all", response_model=List[BudgetResponse])
+async def read_all_budgets(
+    token: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Retrieve all budgets"""
+    budgets = db.query(Budget).all()
+    return budgets
+
+@app.post("/budgets/{conversation_id}", response_model=BudgetResponse, status_code=status.HTTP_201_CREATED)
 async def create_budget(
+    conversation_id: str,
     budget_data: BudgetCreate,
-    conversation_id: str = Header(..., alias="X-Conversation-ID"),
     token: str = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
@@ -198,9 +207,9 @@ async def create_budget(
     db.refresh(db_budget)
     return db_budget
 
-@app.get("/budgets", response_model=BudgetResponse)
+@app.get("/budgets/{conversation_id}", response_model=BudgetResponse)
 async def read_budget(
-    conversation_id: str = Header(..., alias="X-Conversation-ID"),
+    conversation_id: str,
     token: str = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
@@ -213,19 +222,10 @@ async def read_budget(
         )
     return budget
 
-@app.get("/budgets/all", response_model=List[BudgetResponse])
-async def read_all_budgets(
-    token: str = Depends(verify_token),
-    db: Session = Depends(get_db)
-):
-    """Retrieve all budgets"""
-    budgets = db.query(Budget).all()
-    return budgets
-
-@app.put("/budgets", response_model=BudgetResponse)
+@app.put("/budgets/{conversation_id}", response_model=BudgetResponse)
 async def update_budget(
+    conversation_id: str,
     budget_data: BudgetUpdate,
-    conversation_id: str = Header(..., alias="X-Conversation-ID"),
     token: str = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
@@ -242,9 +242,9 @@ async def update_budget(
     db.refresh(budget)
     return budget
 
-@app.delete("/budgets", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/budgets/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_budget(
-    conversation_id: str = Header(..., alias="X-Conversation-ID"),
+    conversation_id: str,
     token: str = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
