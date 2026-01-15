@@ -11,6 +11,7 @@ A REST API built with FastAPI and MariaDB for managing facts and budgets associa
 - **Integration Tests** with unittest
 - **Docker Compose** stack for easy deployment
 - **Large Text Support** - Facts can store up to 16,000 characters, budgets can store up to 100,000 characters
+- **ngrok Integration** - Expose your API to the internet for testing and sharing
 
 ## Project Structure
 
@@ -43,7 +44,8 @@ make up
 ```
 
 The API will be available at `http://localhost:8000`  
-Swagger documentation at `http://localhost:8000/docs`
+Swagger documentation at `http://localhost:8000/docs`  
+ngrok web interface at `http://localhost:4040` (to inspect requests and get the public URL)
 
 ### 2. Set API Token (Optional)
 
@@ -61,9 +63,18 @@ MYSQL_ROOT_PASSWORD=your-root-password
 MYSQL_DATABASE=perfcons
 MYSQL_USER=your-db-user
 MYSQL_PASSWORD=your-db-password
+NGROK_AUTHTOKEN=your-ngrok-authtoken-here
 ```
 
 **Important**: For production deployments, always change the default passwords and API token!
+
+**ngrok Setup (Required for internet access)**: To expose your API to the internet via ngrok:
+1. Sign up for a free account at [ngrok.com](https://ngrok.com)
+2. Get your authtoken from [ngrok dashboard](https://dashboard.ngrok.com/get-started/your-authtoken)
+3. Add the authtoken to your `.env` file as `NGROK_AUTHTOKEN`
+4. Restart the services with `make restart`
+
+**Note**: ngrok requires an authtoken to create tunnels. Without it, the ngrok service will show authentication errors in the logs but other services (API and DB) will work normally.
 
 Then restart services:
 
@@ -274,17 +285,68 @@ curl -X GET http://localhost:8000/budgets/all \
 ## Makefile Commands
 
 ```bash
-make help      # Show available commands
-make build     # Build Docker images
-make up        # Start services
-make down      # Stop services
-make restart   # Restart services
-make logs      # Show logs from all services
-make logs-api  # Show logs from API service
-make logs-db   # Show logs from database service
-make test      # Run integration tests
-make clean     # Stop services and remove volumes
+make help        # Show available commands
+make build       # Build Docker images
+make up          # Start services
+make down        # Stop services
+make restart     # Restart services
+make logs        # Show logs from all services
+make logs-api    # Show logs from API service
+make logs-db     # Show logs from database service
+make logs-ngrok  # Show logs from ngrok service
+make ngrok-url   # Get the ngrok public URL for internet access
+make test        # Run integration tests
+make clean       # Stop services and remove volumes
 ```
+
+## Using ngrok for Internet Access
+
+The ngrok service creates a secure tunnel to expose your local API to the internet. This is useful for:
+- Testing webhooks
+- Sharing your development API with others
+- Testing from mobile devices
+- Integration with external services
+
+### Get your ngrok public URL
+
+After starting the services with `make up`, get your public URL:
+
+```bash
+make ngrok-url
+```
+
+This will output something like: `https://abc123.ngrok.io`
+
+You can also:
+- Visit `http://localhost:4040` in your browser to see the ngrok web interface
+- Inspect all HTTP requests and responses in real-time
+- Replay requests for debugging
+
+### Example: Using the API through ngrok
+
+```bash
+# Get your ngrok URL (will output just the URL when tunnel is ready)
+make ngrok-url
+
+# Or store it in a variable for use in commands
+# Note: Redirect stderr to suppress any Make process messages
+NGROK_URL=$(make ngrok-url 2>&1 | grep "https://")
+
+# Create a fact through the internet
+curl -X POST ${NGROK_URL}/facts \
+  -H "Authorization: Bearer my-secret-token" \
+  -H "X-Conversation-ID: conv-001" \
+  -H "Content-Type: application/json" \
+  -d '{"fact": "Testing through ngrok!"}'
+```
+
+### ngrok Web Interface
+
+Visit `http://localhost:4040` to access the ngrok inspection interface where you can:
+- See the public URL assigned to your tunnel
+- View all HTTP requests and responses
+- Replay requests
+- See request/response details and timing
 
 ## Database Schema
 
@@ -310,6 +372,7 @@ make clean     # Stop services and remove volumes
 - `MYSQL_DATABASE`: Database name (default: `perfcons`)
 - `MYSQL_USER`: Database user (default: `user`)
 - `MYSQL_PASSWORD`: Database password (default: `password`)
+- `NGROK_AUTHTOKEN`: (Required for ngrok) Your ngrok authentication token for creating internet tunnels. Get it from https://dashboard.ngrok.com/get-started/your-authtoken
 
 **Security Note**: Always change default passwords and tokens in production environments!
 

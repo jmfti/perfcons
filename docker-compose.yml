@@ -2,6 +2,8 @@ services:
   db:
     image: mariadb:11.1
     container_name: perfcons-db
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-perfcons}
@@ -24,6 +26,8 @@ services:
       context: ./app
       dockerfile: Dockerfile
     container_name: perfcons-api
+    env_file:
+      - .env
     environment:
       DATABASE_URL: mysql+pymysql://user:password@db:3306/perfcons
       API_TOKEN: ${API_TOKEN:-my-secret-token}
@@ -32,6 +36,26 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - perfcons-network
+    restart: unless-stopped
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: perfcons-ngrok
+    env_file:
+      - .env
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:-}
+    command:
+      - "http"
+      - "api:8000"
+      - "--log"
+      - "stdout"
+    ports:
+      - "4040:4040"
+    depends_on:
+      - api
     networks:
       - perfcons-network
     restart: unless-stopped

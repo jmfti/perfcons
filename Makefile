@@ -1,17 +1,19 @@
-.PHONY: help build up down restart logs test clean
+.PHONY: help build up down restart logs test clean ngrok-url logs-ngrok
 
 # Default target
 help:
 	@echo "Available commands:"
-	@echo "  make build    - Build the Docker images"
-	@echo "  make up       - Start the services"
-	@echo "  make down     - Stop the services"
-	@echo "  make restart  - Restart the services"
-	@echo "  make logs     - Show logs from all services"
-	@echo "  make logs-api - Show logs from API service"
-	@echo "  make logs-db  - Show logs from database service"
-	@echo "  make test     - Run integration tests"
-	@echo "  make clean    - Stop services and remove volumes"
+	@echo "  make build      - Build the Docker images"
+	@echo "  make up         - Start the services"
+	@echo "  make down       - Stop the services"
+	@echo "  make restart    - Restart the services"
+	@echo "  make logs       - Show logs from all services"
+	@echo "  make logs-api   - Show logs from API service"
+	@echo "  make logs-db    - Show logs from database service"
+	@echo "  make logs-ngrok - Show logs from ngrok service"
+	@echo "  make ngrok-url  - Get the ngrok public URL"
+	@echo "  make test       - Run integration tests"
+	@echo "  make clean      - Stop services and remove volumes"
 
 # Build Docker images
 build:
@@ -41,6 +43,20 @@ logs-api:
 # Show DB logs
 logs-db:
 	docker compose logs -f db
+
+# Show ngrok logs
+logs-ngrok:
+	docker compose logs -f ngrok
+
+# Get ngrok public URL
+ngrok-url:
+	@echo "Fetching ngrok public URL..."
+	@TUNNELS=$$(curl -s http://localhost:4040/api/tunnels 2>/dev/null); \
+	if echo "$$TUNNELS" | grep -q '"public_url"'; then \
+		echo "$$TUNNELS" | grep -o '"public_url":"https://[^"]*' | head -1 | cut -d'"' -f4; \
+	else \
+		echo "ngrok tunnel not ready yet. Make sure you have set NGROK_AUTHTOKEN in your .env file and restarted the services."; \
+	fi
 
 # Run integration tests
 test:
